@@ -1,22 +1,5 @@
-# MOOOOOOCAP - AI Motion Capture Solution
-# All dependencies use permissive licenses (Apache 2.0, BSD, MIT, LGPL)
-
-# Core ML/Vision
-mediapipe>=0.10.0          # Apache 2.0 - Pose estimation
-opencv-python>=4.8.0       # BSD - Video processing
-numpy>=1.24.0              # BSD - Numerical computing
-scipy>=1.11.0              # BSD - Signal processing/filtering
-
-# GUI Framework
-PySide6>=6.5.0             # LGPL - Qt for Python
-
-# 3D Visualization
-PyOpenGL>=3.1.6            # BSD - OpenGL bindings
-PyOpenGL-accelerate>=3.1.6 # BSD - Accelerated OpenGL
-
-# Utilities
-pillow>=10.0.0             # HPND (permissive) - Image processing
-tqdm>=4.65.0               # MIT - Progress bars
-
-# Optional but recommended
-onnxruntime>=1.15.0        # MIT - ONNX runtime for faster inference
+numpy>=1.24
+opencv-python>=4.8
+openvino>=2023.2
+PySide6>=6.5
+scipy>=1.10
