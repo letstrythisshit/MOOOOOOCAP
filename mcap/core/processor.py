@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict
 
 import numpy as np
@@ -11,7 +11,7 @@ from mcap.core.filtering import OneEuroConfig, OneEuroFilter
 
 @dataclass
 class ProcessorConfig:
-    smoothing: OneEuroConfig = OneEuroConfig()
+    smoothing: OneEuroConfig = field(default_factory=OneEuroConfig)
     foot_lock_threshold: float = 0.02
 
 
