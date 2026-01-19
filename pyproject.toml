@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=67", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mocap_app"
+version = "0.1.0"
+description = "Single-camera AI motion capture with OpenVINO and a Qt GUI."
+requires-python = ">=3.9"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [{name = "Mocap Team"}]
+dependencies = [
+  "numpy>=1.24",
+  "opencv-python>=4.8",
+  "openvino>=2023.2",
+  "PySide6>=6.5",
+  "scipy>=1.10",
+]
+
+[project.scripts]
+mocap-app = "mocap_app.app:main"
