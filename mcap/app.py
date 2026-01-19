@@ -10,7 +10,7 @@ import numpy as np
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from mcap.core.bvh import BvhWriter
-from mcap.core.calibration import CalibrationData, CalibrationStore
+from mcap.core.calibration import CalibrationStore
 from mcap.core.capture import CameraCapture, CaptureConfig
 from mcap.core.pose import PoseEstimator, PoseFrame
 from mcap.core.processor import MotionProcessor

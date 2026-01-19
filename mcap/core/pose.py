@@ -1,30 +1,43 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional
 
 import mediapipe as mp
 import numpy as np
 
 
+try:
+    SOLUTIONS = mp.solutions
+except AttributeError:
+    try:
+        from mediapipe.python import solutions as mp_solutions
+    except ImportError as exc:
+        raise ImportError(
+            "mediapipe does not expose solutions; ensure the official mediapipe package "
+            "is installed."
+        ) from exc
+    SOLUTIONS = mp_solutions
+
+
 POSE_LANDMARKS = {
-    "left_hip": mp.solutions.pose.PoseLandmark.LEFT_HIP,
-    "right_hip": mp.solutions.pose.PoseLandmark.RIGHT_HIP,
-    "left_knee": mp.solutions.pose.PoseLandmark.LEFT_KNEE,
-    "right_knee": mp.solutions.pose.PoseLandmark.RIGHT_KNEE,
-    "left_ankle": mp.solutions.pose.PoseLandmark.LEFT_ANKLE,
-    "right_ankle": mp.solutions.pose.PoseLandmark.RIGHT_ANKLE,
-    "left_foot": mp.solutions.pose.PoseLandmark.LEFT_FOOT_INDEX,
-    "right_foot": mp.solutions.pose.PoseLandmark.RIGHT_FOOT_INDEX,
-    "right_shoulder": mp.solutions.pose.PoseLandmark.RIGHT_SHOULDER,
-    "left_shoulder": mp.solutions.pose.PoseLandmark.LEFT_SHOULDER,
-    "left_elbow": mp.solutions.pose.PoseLandmark.LEFT_ELBOW,
-    "right_elbow": mp.solutions.pose.PoseLandmark.RIGHT_ELBOW,
-    "left_wrist": mp.solutions.pose.PoseLandmark.LEFT_WRIST,
-    "right_wrist": mp.solutions.pose.PoseLandmark.RIGHT_WRIST,
-    "nose": mp.solutions.pose.PoseLandmark.NOSE,
-    "left_ear": mp.solutions.pose.PoseLandmark.LEFT_EAR,
-    "right_ear": mp.solutions.pose.PoseLandmark.RIGHT_EAR,
+    "left_hip": SOLUTIONS.pose.PoseLandmark.LEFT_HIP,
+    "right_hip": SOLUTIONS.pose.PoseLandmark.RIGHT_HIP,
+    "left_knee": SOLUTIONS.pose.PoseLandmark.LEFT_KNEE,
+    "right_knee": SOLUTIONS.pose.PoseLandmark.RIGHT_KNEE,
+    "left_ankle": SOLUTIONS.pose.PoseLandmark.LEFT_ANKLE,
+    "right_ankle": SOLUTIONS.pose.PoseLandmark.RIGHT_ANKLE,
+    "left_foot": SOLUTIONS.pose.PoseLandmark.LEFT_FOOT_INDEX,
+    "right_foot": SOLUTIONS.pose.PoseLandmark.RIGHT_FOOT_INDEX,
+    "right_shoulder": SOLUTIONS.pose.PoseLandmark.RIGHT_SHOULDER,
+    "left_shoulder": SOLUTIONS.pose.PoseLandmark.LEFT_SHOULDER,
+    "left_elbow": SOLUTIONS.pose.PoseLandmark.LEFT_ELBOW,
+    "right_elbow": SOLUTIONS.pose.PoseLandmark.RIGHT_ELBOW,
+    "left_wrist": SOLUTIONS.pose.PoseLandmark.LEFT_WRIST,
+    "right_wrist": SOLUTIONS.pose.PoseLandmark.RIGHT_WRIST,
+    "nose": SOLUTIONS.pose.PoseLandmark.NOSE,
+    "left_ear": SOLUTIONS.pose.PoseLandmark.LEFT_EAR,
+    "right_ear": SOLUTIONS.pose.PoseLandmark.RIGHT_EAR,
 }
 
 
@@ -44,13 +57,13 @@ class PoseFrame:
 
 class PoseEstimator:
     def __init__(self) -> None:
-        self._pose = mp.solutions.pose.Pose(
+        self._pose = SOLUTIONS.pose.Pose(
             static_image_mode=False,
             model_complexity=2,
             smooth_landmarks=True,
             enable_segmentation=False,
         )
-        self._hands = mp.solutions.hands.Hands(
+        self._hands = SOLUTIONS.hands.Hands(
             static_image_mode=False,
             max_num_hands=2,
             model_complexity=1,
