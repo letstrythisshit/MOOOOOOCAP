@@ -3,42 +3,28 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, Optional
 
-import mediapipe as mp
 import numpy as np
 
-
-try:
-    SOLUTIONS = mp.solutions
-except AttributeError:
+def _load_solutions():
     try:
-        from mediapipe.python import solutions as mp_solutions
+        import mediapipe as mp
     except ImportError as exc:
         raise ImportError(
-            "mediapipe does not expose solutions; ensure the official mediapipe package "
-            "is installed."
+            "mediapipe is not installed. Install the official Google mediapipe package."
         ) from exc
-    SOLUTIONS = mp_solutions
 
+    if hasattr(mp, "solutions"):
+        return mp.solutions
 
-POSE_LANDMARKS = {
-    "left_hip": SOLUTIONS.pose.PoseLandmark.LEFT_HIP,
-    "right_hip": SOLUTIONS.pose.PoseLandmark.RIGHT_HIP,
-    "left_knee": SOLUTIONS.pose.PoseLandmark.LEFT_KNEE,
-    "right_knee": SOLUTIONS.pose.PoseLandmark.RIGHT_KNEE,
-    "left_ankle": SOLUTIONS.pose.PoseLandmark.LEFT_ANKLE,
-    "right_ankle": SOLUTIONS.pose.PoseLandmark.RIGHT_ANKLE,
-    "left_foot": SOLUTIONS.pose.PoseLandmark.LEFT_FOOT_INDEX,
-    "right_foot": SOLUTIONS.pose.PoseLandmark.RIGHT_FOOT_INDEX,
-    "right_shoulder": SOLUTIONS.pose.PoseLandmark.RIGHT_SHOULDER,
-    "left_shoulder": SOLUTIONS.pose.PoseLandmark.LEFT_SHOULDER,
-    "left_elbow": SOLUTIONS.pose.PoseLandmark.LEFT_ELBOW,
-    "right_elbow": SOLUTIONS.pose.PoseLandmark.RIGHT_ELBOW,
-    "left_wrist": SOLUTIONS.pose.PoseLandmark.LEFT_WRIST,
-    "right_wrist": SOLUTIONS.pose.PoseLandmark.RIGHT_WRIST,
-    "nose": SOLUTIONS.pose.PoseLandmark.NOSE,
-    "left_ear": SOLUTIONS.pose.PoseLandmark.LEFT_EAR,
-    "right_ear": SOLUTIONS.pose.PoseLandmark.RIGHT_EAR,
-}
+    try:
+        from mediapipe import solutions as mp_solutions
+    except ImportError as exc:
+        raise ImportError(
+            "mediapipe does not expose solutions. This usually means a different package "
+            "named 'mediapipe' is installed. Uninstall it and install the official "
+            "google 'mediapipe' package."
+        ) from exc
+    return mp_solutions
 
 
 @dataclass
@@ -57,19 +43,39 @@ class PoseFrame:
 
 class PoseEstimator:
     def __init__(self) -> None:
-        self._pose = SOLUTIONS.pose.Pose(
+        solutions = _load_solutions()
+        self._pose = solutions.pose.Pose(
             static_image_mode=False,
             model_complexity=2,
             smooth_landmarks=True,
             enable_segmentation=False,
         )
-        self._hands = SOLUTIONS.hands.Hands(
+        self._hands = solutions.hands.Hands(
             static_image_mode=False,
             max_num_hands=2,
             model_complexity=1,
             min_detection_confidence=0.6,
             min_tracking_confidence=0.6,
         )
+        self._pose_landmarks = {
+            "left_hip": solutions.pose.PoseLandmark.LEFT_HIP,
+            "right_hip": solutions.pose.PoseLandmark.RIGHT_HIP,
+            "left_knee": solutions.pose.PoseLandmark.LEFT_KNEE,
+            "right_knee": solutions.pose.PoseLandmark.RIGHT_KNEE,
+            "left_ankle": solutions.pose.PoseLandmark.LEFT_ANKLE,
+            "right_ankle": solutions.pose.PoseLandmark.RIGHT_ANKLE,
+            "left_foot": solutions.pose.PoseLandmark.LEFT_FOOT_INDEX,
+            "right_foot": solutions.pose.PoseLandmark.RIGHT_FOOT_INDEX,
+            "right_shoulder": solutions.pose.PoseLandmark.RIGHT_SHOULDER,
+            "left_shoulder": solutions.pose.PoseLandmark.LEFT_SHOULDER,
+            "left_elbow": solutions.pose.PoseLandmark.LEFT_ELBOW,
+            "right_elbow": solutions.pose.PoseLandmark.RIGHT_ELBOW,
+            "left_wrist": solutions.pose.PoseLandmark.LEFT_WRIST,
+            "right_wrist": solutions.pose.PoseLandmark.RIGHT_WRIST,
+            "nose": solutions.pose.PoseLandmark.NOSE,
+            "left_ear": solutions.pose.PoseLandmark.LEFT_EAR,
+            "right_ear": solutions.pose.PoseLandmark.RIGHT_EAR,
+        }
 
     def estimate(self, frame_bgr: np.ndarray, timestamp_s: float) -> Optional[PoseFrame]:
         frame_rgb = frame_bgr[:, :, ::-1]
@@ -79,7 +85,7 @@ class PoseEstimator:
 
         joints = {}
         image_joints = {}
-        for name, idx in POSE_LANDMARKS.items():
+        for name, idx in self._pose_landmarks.items():
             landmark = pose_results.pose_world_landmarks.landmark[idx]
             joints[name] = np.array([landmark.x, landmark.y, landmark.z], dtype=float)
             image_landmark = pose_results.pose_landmarks.landmark[idx]
@@ -105,7 +111,7 @@ class PoseEstimator:
             hand_states[hand_label] = HandState(openness=openness, label=label)
         return hand_states
 
-    def _hand_openness(self, hand_landmarks: mp.framework.formats.landmark_pb2.NormalizedLandmarkList) -> float:
+    def _hand_openness(self, hand_landmarks) -> float:
         tips = [4, 8, 12, 16, 20]
         wrist = np.array(
             [

@@ -68,7 +68,15 @@ class MocapApplication(QtWidgets.QApplication):
         super().__init__(sys.argv)
         self.setApplicationName("MOOOOOOCAP")
         self.capture = CameraCapture(CaptureConfig())
-        self.pose = PoseEstimator()
+        try:
+            self.pose = PoseEstimator()
+        except ImportError as exc:
+            QtWidgets.QMessageBox.critical(
+                None,
+                "MediaPipe dependency error",
+                f"{exc}\n\nPlease install the official 'mediapipe' package.",
+            )
+            raise SystemExit(1) from exc
         self.calibration_store = CalibrationStore(Path.home() / ".mcap" / "calibration.json")
         self.calibration = self.calibration_store.load()
         self.processor = MotionProcessor(self.calibration)
