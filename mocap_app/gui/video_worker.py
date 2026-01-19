@@ -21,14 +21,14 @@ class VideoWorker(QThread):
         device: str,
         show_overlay: bool,
         smoothing: OneEuroConfig,
-        camera_index: int = 0,
+        video_path: Path,
     ) -> None:
         super().__init__()
         self.model_dir = model_dir
         self.device = device
         self.show_overlay = show_overlay
         self.smoothing = smoothing
-        self.camera_index = camera_index
+        self.video_path = video_path
         self._running = False
         self.pipeline: Optional[PosePipeline] = None
 
@@ -45,15 +45,15 @@ class VideoWorker(QThread):
             self.error.emit(str(exc))
             return
 
-        capture = cv2.VideoCapture(self.camera_index)
+        capture = cv2.VideoCapture(str(self.video_path))
         if not capture.isOpened():
-            self.error.emit("Unable to open camera feed.")
+            self.error.emit("Unable to open video file.")
             return
 
         while self._running:
             ok, frame = capture.read()
             if not ok:
-                self.error.emit("Camera frame read failed.")
+                self.error.emit("Video frame read failed or end of file reached.")
                 break
             results = self.pipeline.process(frame)
             if self.show_overlay:

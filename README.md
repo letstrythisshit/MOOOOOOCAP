@@ -32,4 +32,4 @@ See `docs/LICENSING.md` for the model list, sources, and licenses.
 A full system diagram and design rationale are in `docs/ARCHITECTURE.md`.
 
 ## GUI Preview
-The GUI is designed for live capture with overlays and tuning. Launch with `python -m mocap_app.app`.
+The GUI is designed for video-file processing with overlays and tuning. Select a file in the UI and start processing.
