@@ -22,7 +22,7 @@ class ModelConfig:
     detection_nms_threshold: float = 0.5
 
     # Pose model
-    pose_model_name: str = "rtmpose-x-wholebody"
+    pose_model_name: str = "rtmpose-m-wholebody"
     pose_confidence: float = 0.3
 
     # Limits
