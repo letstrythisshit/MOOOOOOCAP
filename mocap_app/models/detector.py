@@ -73,8 +73,20 @@ class PersonDetector:
             image, winStride=(8, 8), padding=(4, 4), scale=1.05
         )
 
+        # If no detections, return empty list
+        if len(boxes) == 0:
+            return []
+
+        # Handle different OpenCV versions - weights might be tuple or array
+        if isinstance(weights, tuple):
+            weights = np.array(weights)
+        elif hasattr(weights, 'flatten'):
+            weights = weights.flatten()
+        else:
+            weights = np.array(weights).flatten()
+
         detections = []
-        for (x, y, w, h), weight in zip(boxes, weights.flatten()):
+        for (x, y, w, h), weight in zip(boxes, weights):
             if weight > self.confidence_threshold:
                 detections.append(
                     BoundingBox(
