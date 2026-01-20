@@ -1,0 +1,77 @@
+# Example configuration for sophisticated AI motion capture system
+
+# Device configuration
+device: cuda  # Options: cpu, cuda, directml, coreml
+model_dir: data/models
+cache_dir: data/cache
+
+# Person detection settings
+detection:
+  model_name: rtmdet-nano  # Options: rtmdet-nano, rtmdet-s, rtmdet-m
+  confidence_threshold: 0.5
+  nms_threshold: 0.5
+  max_persons: 10  # Maximum persons to track per frame
+
+# Pose estimation settings
+pose:
+  model_name: rtmpose-x  # Options: rtmpose-t, rtmpose-s, rtmpose-m, rtmpose-l, rtmpose-x
+  use_wholebody: true  # Use whole-body model (133 keypoints)
+  use_hand_refinement: false  # Use dedicated hand refinement (not yet implemented)
+  confidence_threshold: 0.3
+
+# Multi-person tracking settings
+tracking:
+  enabled: true
+  tracker_type: bytetrack  # Options: bytetrack, ocsort, none
+  track_thresh: 0.6  # High confidence threshold
+  track_buffer: 30  # Number of frames to keep lost tracks
+  match_thresh: 0.8  # IoU threshold for matching
+
+# Temporal filtering settings
+filtering:
+  enabled: true
+  one_euro_min_cutoff: 1.0  # Minimum smoothing (higher = less smooth)
+  one_euro_beta: 0.7  # Speed coefficient (higher = more adaptive)
+  one_euro_d_cutoff: 1.0  # Derivative smoothing
+  use_kalman: false  # Kalman filter (not yet implemented)
+  process_noise: 0.01
+  measurement_noise: 0.1
+
+# 3D pose estimation settings (not yet implemented)
+pose_3d:
+  enabled: false
+  method: lifting  # Options: lifting, kinematic, none
+  use_temporal: true
+  temporal_window: 9
+
+# Export settings
+export:
+  formats:
+    - json
+    - csv
+  output_dir: data/exports
+  # BVH export options (simplified implementation)
+  bvh_fps: 30.0
+  bvh_skeleton_type: mixamo  # Options: mixamo, unity, unreal
+  # FBX export options (not yet implemented)
+  fbx_scale: 1.0
+  fbx_up_axis: Y
+
+# GUI settings (for future GUI application)
+gui:
+  window_width: 1920
+  window_height: 1080
+  show_bbox: true
+  show_skeleton: true
+  show_keypoints: true
+  show_3d_view: false  # 3D view not yet implemented
+  show_confidence: true
+  # Colors in BGR format
+  skeleton_color: [0, 255, 0]  # Green
+  hand_color: [255, 180, 0]  # Orange
+  face_color: [180, 0, 255]  # Purple
+  target_fps: 30
+  enable_gpu: true
+
+# Video processing settings
+video_fps: null  # Auto-detect from video if null

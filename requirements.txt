@@ -1,5 +1,38 @@
-numpy>=1.24
-opencv-python>=4.8
-openvino>=2023.2
-PySide6>=6.5
-scipy>=1.10
+# Core dependencies
+numpy>=1.24.0
+opencv-python>=4.8.0
+scipy>=1.11.0
+
+# Deep Learning & Inference
+onnxruntime-gpu>=1.16.0  # Use onnxruntime for CPU-only
+torch>=2.0.0  # For model conversion and some utilities
+torchvision>=0.15.0
+
+# MMPose and MMDetection ecosystem
+mmengine>=0.9.0
+mmcv>=2.1.0
+mmdet>=3.2.0
+mmpose>=1.3.0
+
+# GUI
+PySide6>=6.6.0
+PyOpenGL>=3.1.7
+PyOpenGL-accelerate>=3.1.7
+
+# 3D and Export
+trimesh>=4.0.0  # For 3D mesh operations
+pyrender>=0.1.45  # For 3D rendering
+pillow>=10.0.0
+
+# Tracking
+filterpy>=1.4.5  # Kalman filters
+lap>=0.4.0  # Linear assignment for tracking
+
+# Utilities
+tqdm>=4.66.0
+pyyaml>=6.0
+requests>=2.31.0
+rich>=13.0.0  # For beautiful terminal output
+
+# Export formats
+bvh>=0.2.0  # BVH file format support
