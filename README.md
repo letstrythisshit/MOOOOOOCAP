@@ -1,6 +1,8 @@
-# 🎬 Sophisticated AI Motion Capture System
+# 🎬 AI Motion Capture System v2.0
 
-**State-of-the-art, single-camera motion capture with whole-body tracking, advanced finger articulation, and commercial-friendly licensing.**
+**A sophisticated motion capture system with a beautiful modern GUI**
+
+State-of-the-art whole-body tracking from single-camera video using RTMPose and RTMDet.
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.9+-green.svg)](https://www.python.org/)
@@ -44,74 +46,38 @@
 ### Installation
 
 ```bash
-# Clone repository
-git clone https://github.com/yourusername/MOOOOOOCAP.git
+# Navigate to repository
 cd MOOOOOOCAP
-
-# Create virtual environment
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Download models
-python scripts/download_models.py
+# Launch the application
+python run.py
 ```
 
-### Basic Usage
+### Using the GUI
 
-```bash
-# Process a video
-python -m mocap_app.cli \
-    --video input.mp4 \
-    --output results.json \
-    --vis visualization.mp4
+1. **Open a video**
+   - Click "📂 Open Video" or press `Ctrl+O`
+   - Select your video file (MP4, AVI, MOV, MKV supported)
 
-# Use GPU acceleration
-python -m mocap_app.cli \
-    --video input.mp4 \
-    --output results.json \
-    --device cuda
+2. **Configure settings** (in the Control Panel on the right)
+   - Select device (CPU or CUDA GPU)
+   - Adjust detection and pose confidence thresholds
+   - Enable/disable multi-person tracking
+   - Customize visualization options
 
-# Export to multiple formats
-python -m mocap_app.cli \
-    --video input.mp4 \
-    --output results \
-    --export-format both  # JSON + CSV
-```
+3. **Process the video**
+   - Click "🎯 Process Video" to start motion capture
+   - Watch real-time skeleton overlay on the video
+   - View statistics in the Visualization panel
+   - Monitor hand tracking details in the Hands tab
 
-### Python API
-
-```python
-from pathlib import Path
-from mocap_app.core.config import MocapConfig
-from mocap_app.core.pipeline import MocapPipeline
-
-# Initialize pipeline
-config = MocapConfig()
-config.device = "cuda"  # Use GPU
-config.pose.model_name = "rtmpose-x"  # Best accuracy
-
-pipeline = MocapPipeline(config)
-
-# Process video
-results = pipeline.process_video(
-    video_path=Path("input.mp4"),
-    output_path=Path("visualization.mp4"),
-)
-
-# Access results
-for frame_result in results:
-    for person in frame_result.persons:
-        print(f"Track ID: {person.track_id}")
-        print(f"Body keypoints: {person.pose_2d.body_keypoints.shape}")
-
-        if person.pose_2d.left_hand:
-            articulation = person.pose_2d.left_hand.articulation
-            print(f"Left hand state: {articulation.state}")
-            print(f"Index finger curl: {articulation.index_curl:.2f}")
-```
+4. **Export results**
+   - Click "💾 Export" when processing is complete
+   - Choose format: JSON, CSV, or BVH
+   - Results include all 133 keypoints and hand articulation data
 
 ## 📐 Architecture
 
@@ -135,11 +101,15 @@ Input Video
 
 ### Key Components
 
-- **`mocap_app/models/`**: Model loading and inference (RTMDet, RTMPose)
+- **`mocap_app/types.py`**: Core data structures (BoundingBox, WholeBodyPose, etc.)
+- **`mocap_app/config.py`**: Configuration management system
+- **`mocap_app/models/`**: AI models (detector, pose estimator)
 - **`mocap_app/tracking/`**: Multi-person tracking (ByteTrack)
 - **`mocap_app/filters/`**: Temporal smoothing (One-Euro filter)
-- **`mocap_app/export/`**: Export to various formats
-- **`mocap_app/core/`**: Pipeline orchestration and configuration
+- **`mocap_app/pipeline/`**: Main processing pipeline orchestration
+- **`mocap_app/gui/`**: Beautiful dark-themed GUI (Qt/PySide6)
+- **`mocap_app/export/`**: Export to various formats (JSON, CSV, BVH)
+- **`mocap_app/app.py`**: Main application entry point
 
 ## 🔧 Configuration
 
@@ -246,27 +216,44 @@ All models are from OpenMMLab and licensed under **Apache 2.0**:
 
 ```
 MOOOOOOCAP/
-├── mocap_app/           # Main application package
-│   ├── core/            # Core pipeline and config
-│   ├── models/          # Model loading and inference
-│   ├── tracking/        # Multi-person tracking
-│   ├── filters/         # Temporal smoothing
-│   ├── export/          # Export formats
-│   └── cli.py           # Command-line interface
-├── scripts/             # Utility scripts
-├── data/                # Models and outputs
-│   ├── models/          # Downloaded models
-│   └── exports/         # Export outputs
-├── docs/                # Documentation
-└── requirements.txt     # Python dependencies
+├── mocap_app/                     # Main application package
+│   ├── __init__.py               # Package initialization
+│   ├── types.py                  # Core data structures
+│   ├── config.py                 # Configuration system
+│   ├── app.py                    # Application entry point
+│   ├── models/                   # AI model components
+│   │   ├── detector.py          # Person detection (RTMDet)
+│   │   └── pose_estimator.py   # Pose estimation (RTMPose)
+│   ├── tracking/                 # Multi-person tracking
+│   │   └── bytetrack.py         # ByteTrack implementation
+│   ├── filters/                  # Temporal smoothing
+│   │   └── one_euro.py          # One-Euro filter
+│   ├── pipeline/                 # Processing pipeline
+│   ├── gui/                      # Modern dark-themed GUI
+│   │   ├── main_window.py       # Main application window
+│   │   ├── video_widget.py      # Video player with timeline
+│   │   ├── control_panel.py     # Settings controls
+│   │   └── visualization_widget.py  # Stats and 3D view
+│   ├── export/                   # Export functionality
+│   └── utils/                    # Utility functions
+├── run.py                        # Application launcher
+├── requirements.txt              # Python dependencies
+├── config.yaml                   # Configuration file (optional)
+├── data/                         # Data directory
+│   ├── models/                   # Downloaded AI models
+│   └── exports/                  # Exported results
+└── docs/                         # Documentation
 ```
 
 ### Adding New Features
 
-1. **New Export Format**: Add to `mocap_app/export/`
-2. **New Tracking Algorithm**: Implement in `mocap_app/tracking/`
-3. **3D Pose Lifting**: Extend `mocap_app/core/types.py` and `pipeline.py`
-4. **GUI**: Build in `mocap_app/gui/` using PySide6
+The modular architecture makes it easy to extend:
+
+1. **New AI Models**: Add to `mocap_app/models/`
+2. **New Tracking Algorithms**: Implement in `mocap_app/tracking/`
+3. **New Export Formats**: Add to `mocap_app/export/`
+4. **GUI Enhancements**: Extend widgets in `mocap_app/gui/`
+5. **3D Visualization**: Enhance `visualization_widget.py` with PyOpenGL
 
 ## 🤝 Contributing
 
