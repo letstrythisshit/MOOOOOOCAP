@@ -28,9 +28,11 @@ from PySide6.QtWidgets import (
 )
 
 from mocap_app.config import AppConfig
-from mocap_app.gui.video_widget import VideoWidget
+from mocap_app.export.exporters import export_results
 from mocap_app.gui.control_panel import ControlPanel
+from mocap_app.gui.video_widget import VideoWidget
 from mocap_app.gui.visualization_widget import VisualizationWidget
+from mocap_app.pipeline.processor import MocapProcessor
 
 
 class MainWindow(QMainWindow):
@@ -41,9 +43,25 @@ class MainWindow(QMainWindow):
 
         self.config = config
         self.current_video: Optional[Path] = None
+        self.processor: Optional[MocapProcessor] = None
+        self.results = []
 
         self.setup_ui()
         self.apply_dark_theme()
+
+        # Initialize processor
+        try:
+            self.processor = MocapProcessor(config)
+            self.statusBar().showMessage("Ready - Models loaded")
+        except Exception as e:
+            self.statusBar().showMessage(f"Warning: Could not load models - {e}")
+            QMessageBox.warning(
+                self,
+                "Model Loading",
+                f"Could not load AI models.\n\n"
+                f"The application will run in demo mode.\n\n"
+                f"Error: {e}",
+            )
 
     def setup_ui(self):
         """Set up the user interface."""
@@ -369,23 +387,61 @@ class MainWindow(QMainWindow):
     def process_video(self):
         """Process the current video."""
         if not self.current_video:
+            QMessageBox.warning(self, "No Video", "Please open a video file first.")
+            return
+
+        if not self.processor:
             QMessageBox.warning(
-                self, "No Video", "Please open a video file first."
+                self,
+                "No Processor",
+                "Motion capture processor is not initialized.\n"
+                "Please check if models are available.",
             )
             return
 
-        self.statusBar().showMessage("Processing video...")
-        # TODO: Connect to actual pipeline
-        QMessageBox.information(
-            self,
-            "Processing",
-            "Video processing will be implemented with the full pipeline integration.",
-        )
+        try:
+            self.statusBar().showMessage("Processing video...")
+
+            # Process video
+            def progress_callback(frame_idx, total_frames):
+                percent = int((frame_idx / total_frames) * 100)
+                self.statusBar().showMessage(
+                    f"Processing... {frame_idx}/{total_frames} ({percent}%)"
+                )
+                QApplication.processEvents()  # Keep GUI responsive
+
+            self.results = self.processor.process_video(
+                self.current_video, progress_callback
+            )
+
+            # Show summary
+            num_frames = len(self.results)
+            total_tracks = sum(len(r.tracks) for r in self.results)
+            avg_persons = total_tracks / num_frames if num_frames > 0 else 0
+
+            self.statusBar().showMessage(
+                f"Processing complete! {num_frames} frames, avg {avg_persons:.1f} persons/frame"
+            )
+
+            QMessageBox.information(
+                self,
+                "Processing Complete",
+                f"Successfully processed {num_frames} frames!\n\n"
+                f"Average persons per frame: {avg_persons:.1f}\n"
+                f"Total track instances: {total_tracks}\n\n"
+                f"You can now export the results.",
+            )
+
+        except Exception as e:
+            self.statusBar().showMessage("Processing failed")
+            QMessageBox.critical(
+                self, "Processing Error", f"Failed to process video:\n\n{str(e)}"
+            )
 
     @Slot()
     def export_results(self):
         """Export processing results."""
-        if not self.current_video:
+        if not self.results:
             QMessageBox.warning(
                 self, "No Results", "Please process a video first."
             )
@@ -399,7 +455,29 @@ class MainWindow(QMainWindow):
         )
 
         if file_path:
-            self.statusBar().showMessage(f"Exported to: {file_path}")
+            try:
+                # Determine format from extension
+                path = Path(file_path)
+                formats = []
+                if path.suffix == ".json":
+                    formats.append("json")
+                elif path.suffix == ".csv":
+                    formats.append("csv")
+                else:
+                    formats.append("json")
+
+                # Export
+                export_results(self.results, path, formats)
+
+                self.statusBar().showMessage(f"✓ Exported to: {file_path}")
+                QMessageBox.information(
+                    self, "Export Complete", f"Results exported successfully to:\n{file_path}"
+                )
+
+            except Exception as e:
+                QMessageBox.critical(
+                    self, "Export Error", f"Failed to export results:\n\n{str(e)}"
+                )
 
     @Slot()
     def show_about(self):
